@@ -27,17 +27,17 @@ interface Message {
   content: string;
 }
 
-// Configuration
-const config = {
-  apiUrl: 'https://prabhat7099545153.services.ai.azure.com/models/chat/completions',
-  apiVersion: '2024-05-01-preview',
-  apiKey: '2SCdM6bGYJZqi5866cIvVeQHheIJxMidTerFZeMMYQSFPxwYd0APJQQJ99BBACHYHv6XJ3w3AAAAACOGJvaN',
-  modelName: 'DeepSeek-V3',
-  maxTokens: 2048,
-  temperature: 0.8,
-  topP: 0.1,
-  presencePenalty: 0,
-  frequencyPenalty: 0
+// API Configuration
+const API_CONFIG = {
+  BASE_URL: 'https://prabhat7099545153.services.ai.azure.com/models/chat/completions',
+  API_VERSION: '2024-05-01-preview',
+  API_KEY: '2SCdM6bGYJZqi5866cIvVeQHheIJxMidTerFZeMMYQSFPxwYd0APJQQJ99BBACHYHv6XJ3w3AAAAACOGJvaN',
+  MODEL_NAME: 'DeepSeek-V3',
+  MAX_TOKENS: 2048,
+  TEMPERATURE: 0.8,
+  TOP_P: 0.1,
+  PRESENCE_PENALTY: 0,
+  FREQUENCY_PENALTY: 0
 };
 
 const theme = createTheme({
@@ -186,20 +186,20 @@ const ChatInterface: React.FC = () => {
     setCurrentStreamingMessage('');
 
     try {
-      const response = await fetch(`${config.apiUrl}?api-version=${config.apiVersion}`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}?api-version=${API_CONFIG.API_VERSION}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.apiKey}`
+          'Authorization': `Bearer ${API_CONFIG.API_KEY}`
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
-          max_tokens: config.maxTokens,
-          temperature: config.temperature,
-          top_p: config.topP,
-          presence_penalty: config.presencePenalty,
-          frequency_penalty: config.frequencyPenalty,
-          model: config.modelName,
+          max_tokens: API_CONFIG.MAX_TOKENS,
+          temperature: API_CONFIG.TEMPERATURE,
+          top_p: API_CONFIG.TOP_P,
+          presence_penalty: API_CONFIG.PRESENCE_PENALTY,
+          frequency_penalty: API_CONFIG.FREQUENCY_PENALTY,
+          model: API_CONFIG.MODEL_NAME,
           stream: true
         })
       });
@@ -253,7 +253,7 @@ const ChatInterface: React.FC = () => {
           {/* Header */}
           <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <SmartToyIcon /> Azure AI Chat
+              <SmartToyIcon /> CloudSage AI Chat
             </Typography>
             <Tooltip title="Clear conversation">
               <IconButton

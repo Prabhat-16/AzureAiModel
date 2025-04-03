@@ -13,8 +13,7 @@ import {
   Avatar,
   Fade,
   Container,
-  Tooltip,
-  Divider
+  Tooltip
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -174,11 +173,11 @@ const ChatInterface: React.FC = () => {
     setCurrentStreamingMessage('');
 
     try {
-      const response = await fetch('https://prabhat7099545153.services.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}?api-version=${process.env.REACT_APP_API_VERSION}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer 2SCdM6bGYJZqi5866cIvVeQHheIJxMidTerFZeMMYQSFPxwYd0APJQQJ99BBACHYHv6XJ3w3AAAAACOGJvaN`
+          'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
@@ -187,7 +186,7 @@ const ChatInterface: React.FC = () => {
           top_p: 0.1,
           presence_penalty: 0,
           frequency_penalty: 0,
-          model: "DeepSeek-V3",
+          model: process.env.REACT_APP_MODEL_NAME,
           stream: true
         })
       });

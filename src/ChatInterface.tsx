@@ -27,6 +27,19 @@ interface Message {
   content: string;
 }
 
+// Configuration
+const config = {
+  apiUrl: 'https://prabhat7099545153.services.ai.azure.com/models/chat/completions',
+  apiVersion: '2024-05-01-preview',
+  apiKey: '2SCdM6bGYJZqi5866cIvVeQHheIJxMidTerFZeMMYQSFPxwYd0APJQQJ99BBACHYHv6XJ3w3AAAAACOGJvaN',
+  modelName: 'DeepSeek-V3',
+  maxTokens: 2048,
+  temperature: 0.8,
+  topP: 0.1,
+  presencePenalty: 0,
+  frequencyPenalty: 0
+};
+
 const theme = createTheme({
   palette: {
     mode: 'dark',
@@ -173,20 +186,20 @@ const ChatInterface: React.FC = () => {
     setCurrentStreamingMessage('');
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}?api-version=${process.env.REACT_APP_API_VERSION}`, {
+      const response = await fetch(`${config.apiUrl}?api-version=${config.apiVersion}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`
+          'Authorization': `Bearer ${config.apiKey}`
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
-          max_tokens: 2048,
-          temperature: 0.8,
-          top_p: 0.1,
-          presence_penalty: 0,
-          frequency_penalty: 0,
-          model: process.env.REACT_APP_MODEL_NAME,
+          max_tokens: config.maxTokens,
+          temperature: config.temperature,
+          top_p: config.topP,
+          presence_penalty: config.presencePenalty,
+          frequency_penalty: config.frequencyPenalty,
+          model: config.modelName,
           stream: true
         })
       });

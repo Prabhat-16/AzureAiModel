@@ -1,77 +1,118 @@
-LLM Deployment on Azure
+# CloudSage AI Chat
 
-Overview
+## Overview
 
-This project involves deploying a Large Language Model (LLM) on Azure with a React-based web application for interaction. The model is hosted using Azure services to ensure scalability, security, and performance.
+CloudSage AI Chat is a modern, responsive chat interface built with React and Material UI that connects to Azure's AI services. The application provides a sleek, dark-themed interface for interacting with AI models, featuring real-time streaming responses, markdown support, and a user-friendly design.
 
-Features
+## Features
 
-React Web Application for user-friendly interaction
+- **Modern UI/UX**: Beautiful dark-themed interface with Material UI components
+- **Real-time Streaming**: Responses stream in real-time with a typing indicator
+- **Markdown Support**: Properly formatted markdown in AI responses (bold, italic, code blocks, lists, etc.)
+- **Copy Functionality**: Easy one-click copying of AI responses
+- **Responsive Design**: Works on desktop and mobile devices
+- **Azure AI Integration**: Connects to Azure AI services for powerful language model capabilities
+- **Conversation Management**: Clear conversation history with a single click
 
-Hosted on Azure App Services for seamless deployment
+## Technology Stack
 
-Utilizes Azure Machine Learning for model management
+- **Frontend**: React with TypeScript
+- **UI Framework**: Material UI (MUI)
+- **Styling**: Emotion for animations and custom styling
+- **API Integration**: Azure AI services with streaming support
+- **Deployment**: Docker containerization with Nginx
 
-Integrated with Azure Functions for serverless execution
+## Prerequisites
 
-Secured using Azure Active Directory (AAD)
+- Node.js (v14 or higher)
+- npm or yarn
+- Docker (for containerized deployment)
+- Azure account with AI services access
 
-Supports REST API for easy integration with applications
+## Installation
 
-Prerequisites
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd cloudsage-ai-chat
+   ```
 
-An Azure account
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-Azure CLI installed on your local machine
+3. Configure environment variables:
+   Create a `.env` file in the root directory with the following variables:
+   ```
+   REACT_APP_API_BASE_URL=https://your-azure-ai-endpoint
+   REACT_APP_API_VERSION=2024-05-01-preview
+   REACT_APP_API_KEY=your-api-key
+   REACT_APP_MODEL_NAME=DeepSeek-V3
+   ```
 
-Node.js and npm for React development
+4. Start the development server:
+   ```
+   npm start
+   ```
 
-Azure Machine Learning SDK (if applicable)
+## Deployment
 
-Deployment Steps
+### Docker Deployment
 
-Setup Azure Resources:
+1. Build the Docker image:
+   ```
+   docker build -t cloudsage-ai-chat .
+   ```
 
-Create a Resource Group
+2. Run the container:
+   ```
+   docker run -p 80:80 cloudsage-ai-chat
+   ```
 
-Create an Azure App Service
+### Azure Deployment
 
-Create an Azure Machine Learning Workspace
+1. Build the production version:
+   ```
+   npm run build
+   ```
 
-Model Deployment:
+2. Deploy to Azure App Service using Azure CLI:
+   ```
+   az webapp deployment source config-zip --resource-group <resource-group> --name <app-name> --src build.zip
+   ```
 
-Train or fine-tune your LLM (if necessary)
+## Configuration
 
-Register the model in Azure ML Model Registry
+The application can be configured by modifying the `API_CONFIG` object in `src/ChatInterface.tsx`:
 
-Deploy the model using Azure App Services or Azure Functions
+```typescript
+const API_CONFIG = {
+  BASE_URL: 'https://your-azure-ai-endpoint',
+  API_VERSION: '2024-05-01-preview',
+  API_KEY: 'your-api-key',
+  MODEL_NAME: 'DeepSeek-V3',
+  MAX_TOKENS: 2048,
+  TEMPERATURE: 0.8,
+  TOP_P: 0.1,
+  PRESENCE_PENALTY: 0,
+  FREQUENCY_PENALTY: 0
+};
+```
 
-React Web Application Deployment:
+## Usage
 
-Build the React app using npm run build
+1. Open the application in your web browser
+2. Type your message in the input field at the bottom
+3. Press Enter or click the Send button
+4. View the AI's response as it streams in real-time
+5. Use the copy button to copy any response
+6. Clear the conversation using the delete button in the header
 
-Deploy the build folder to Azure App Service
+## License
 
-Connect the frontend to the LLM API endpoint
+[MIT License](LICENSE)
 
-Configure API Endpoints:
+## Contributing
 
-Expose the model as a REST API
-
-Enable authentication using Azure AD
-
-Testing & Monitoring:
-
-Use Azure Monitor and Application Insights for tracking performance
-
-Debug and optimize for scalability
-
-Usage
-
-Access the React Web App hosted on Azure.
-
-Authenticate using Azure AD (if enabled).
-
-Enter text in the UI and submit queries to the LLM.
-
-The response will be displayed on the frontend.
+Contributions are welcome! Please feel free to submit a Pull Request.

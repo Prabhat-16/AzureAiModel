@@ -47,11 +47,15 @@ jobs:
         with:
           name: node-app
       
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
-        with:
-          app-name: 'AzureAiModel'
-          slot-name: 'Production'
-          package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4961F13E2D70488994031501C9BAB583 }}
+      - name: Build App
+        run: |
+          npm install
+          npm run build
+
+- name: Deploy to Azure Web App
+  uses: azure/webapps-deploy@v3
+  with:
+    app-name: AiModel
+    slot-name: Production
+    publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+    package: ./build

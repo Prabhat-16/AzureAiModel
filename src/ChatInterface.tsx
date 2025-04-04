@@ -363,7 +363,7 @@ const ChatInterface: React.FC = () => {
           {/* Header */}
           <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <SmartToyIcon /> CloudSage AI Chat
+              <SmartToyIcon /> CloudSagee AI Chat
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Tooltip title="Retry last message">

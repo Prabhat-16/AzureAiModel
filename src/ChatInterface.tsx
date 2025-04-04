@@ -115,7 +115,7 @@ const ChatInterface: React.FC = () => {
   const [retryCount, setRetryCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  // const [isInitialized, setIsInitialized] = useState(false);
   const streamingMessageRef = useRef('');
 
   const scrollToBottom = () => {
@@ -221,7 +221,7 @@ const ChatInterface: React.FC = () => {
     
     // Create a new AbortController for this request
     abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
+    // const signal = abortControllerRef.current.signal;
 
     try {
       // Prepare messages array with system message if this is the first message

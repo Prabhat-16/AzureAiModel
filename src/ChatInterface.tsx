@@ -13,31 +13,40 @@ import {
   Avatar,
   Fade,
   Container,
-  Tooltip
+  Tooltip,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { keyframes } from '@emotion/react';
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
-// API Configuration
+// API Configuration - Adjusted for better performance
 const API_CONFIG = {
   BASE_URL: 'https://prabhat7099545153.services.ai.azure.com/models/chat/completions',
   API_VERSION: '2024-05-01-preview',
   API_KEY: '2SCdM6bGYJZqi5866cIvVeQHheIJxMidTerFZeMMYQSFPxwYd0APJQQJ99BBACHYHv6XJ3w3AAAAACOGJvaN',
   MODEL_NAME: 'DeepSeek-V3',
-  MAX_TOKENS: 2048,
-  TEMPERATURE: 0.8,
-  TOP_P: 0.1,
-  PRESENCE_PENALTY: 0,
-  FREQUENCY_PENALTY: 0
+  MAX_TOKENS: 2048, // Reduced for faster responses
+  TEMPERATURE: 0.5, // Lower temperature for more focused responses
+  TOP_P: 0.9,
+  PRESENCE_PENALTY: 0.3,
+  FREQUENCY_PENALTY: 0.2
+};
+
+// System message to guide the AI's behavior - More specific instructions
+const SYSTEM_MESSAGE: Message = {
+  role: 'system',
+  content: 'You are CloudSage AI, a helpful and knowledgeable assistant. Provide clear, concise, and accurate responses. Focus on answering the user\'s question directly without unnecessary elaboration. If you don\'t know something, admit it. Use markdown formatting for better readability.'
 };
 
 const theme = createTheme({
@@ -102,7 +111,12 @@ const ChatInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState('');
   const [copyTooltip, setCopyTooltip] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const streamingMessageRef = useRef('');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -112,14 +126,30 @@ const ChatInterface: React.FC = () => {
     scrollToBottom();
   }, [messages, currentStreamingMessage]);
 
+  // Cleanup function to abort any ongoing requests when component unmounts
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
     try {
+      let buffer = '';
+      streamingMessageRef.current = ''; // Reset the streaming message reference
+      
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         
         const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n');
+        buffer += chunk;
+        
+        // Process complete lines
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep the last incomplete line in the buffer
         
         for (const line of lines) {
           if (line.trim() === '') continue;
@@ -144,35 +174,37 @@ const ChatInterface: React.FC = () => {
                 .replace(/^\d+\.\s+(.*)$/gm, '<li>$1</li>')
                 // Handle bullet points
                 .replace(/^[-*]\s+(.*)$/gm, '<li>$1</li>')
-                // Handle headers
-                .replace(/^#\s+(.*)$/gm, '<h3>$1</h3>')
-                .replace(/^##\s+(.*)$/gm, '<h4>$1</h4>')
+                // Handle # being used as bullet points
+                .replace(/^#\s+(?!\s*#)(.*)$/gm, '<li>$1</li>')
+                // Handle headers - improved to handle multiple levels
+                .replace(/^#\s+(.*)$/gm, '<h1>$1</h1>')
+                .replace(/^##\s+(.*)$/gm, '<h2>$1</h2>')
+                .replace(/^###\s+(.*)$/gm, '<h3>$1</h3>')
+                .replace(/^####\s+(.*)$/gm, '<h4>$1</h4>')
+                .replace(/^#####\s+(.*)$/gm, '<h5>$1</h5>')
+                .replace(/^######\s+(.*)$/gm, '<h6>$1</h6>')
                 // Handle links
                 .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
                 // Handle line breaks
                 .replace(/\n/g, '<br/>');
               
-              setCurrentStreamingMessage(prev => {
-                // Check if the previous message ends with a list item
-                const endsWithListItem = prev.endsWith('</li>');
-                // Add proper list tags if needed
-                if (content.match(/^\d+\.\s+/) && !endsWithListItem) {
-                  return prev + '<ol>' + processedContent;
-                } else if (content.match(/^[-*]\s+/) && !endsWithListItem) {
-                  return prev + '<ul>' + processedContent;
-                } else if (endsWithListItem && !content.match(/^[-*]\s+/) && !content.match(/^\d+\.\s+/)) {
-                  return prev + '</ol></ul>' + processedContent;
-                }
-                return prev + processedContent;
-              });
+              // Update both the ref and the state
+              streamingMessageRef.current += processedContent;
+              setCurrentStreamingMessage(streamingMessageRef.current);
             }
           } catch (e) {
-            console.error('Error parsing line:', e);
+            console.error('Error parsing line:', e, 'Line:', line);
           }
         }
       }
+      
+      // After the stream is complete, ensure the final message is added
+      if (streamingMessageRef.current) {
+        console.log('Stream complete, final message:', streamingMessageRef.current);
+      }
     } catch (error) {
       console.error('Error reading stream:', error);
+      throw error;
     }
   };
 
@@ -184,8 +216,25 @@ const ChatInterface: React.FC = () => {
     setInput('');
     setIsLoading(true);
     setCurrentStreamingMessage('');
+    setErrorMessage(null);
+    streamingMessageRef.current = ''; // Reset the streaming message reference
+    
+    // Create a new AbortController for this request
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
 
     try {
+      // Prepare messages array with system message if this is the first message
+      const messageArray = messages.length === 0 
+        ? [SYSTEM_MESSAGE, userMessage] 
+        : [...messages, userMessage];
+      
+      console.log('Sending request to API with messages:', messageArray);
+      
+      // Add timeout to the fetch request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const response = await fetch(`${API_CONFIG.BASE_URL}?api-version=${API_CONFIG.API_VERSION}`, {
         method: 'POST',
         headers: {
@@ -193,7 +242,7 @@ const ChatInterface: React.FC = () => {
           'Authorization': `Bearer ${API_CONFIG.API_KEY}`
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: messageArray,
           max_tokens: API_CONFIG.MAX_TOKENS,
           temperature: API_CONFIG.TEMPERATURE,
           top_p: API_CONFIG.TOP_P,
@@ -201,38 +250,99 @@ const ChatInterface: React.FC = () => {
           frequency_penalty: API_CONFIG.FREQUENCY_PENALTY,
           model: API_CONFIG.MODEL_NAME,
           stream: true
-        })
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const reader = response.body?.getReader();
       if (reader) {
         await processStream(reader);
         
-        if (currentStreamingMessage) {
-          setMessages(prev => [...prev, { role: 'assistant', content: currentStreamingMessage }]);
+        // After the stream is complete, add the final message to the messages array
+        if (streamingMessageRef.current) {
+          console.log('Adding final message to chat:', streamingMessageRef.current);
+          setMessages(prev => [...prev, { role: 'assistant', content: streamingMessageRef.current }]);
           setCurrentStreamingMessage('');
+          // Reset retry count on successful response
+          setRetryCount(0);
         }
       }
     } catch (error) {
       console.error('Error:', error);
+      
+      // Check if the error is due to abort
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        console.log('Request was aborted');
+        setErrorMessage('Request timed out. Please try again.');
+        return;
+      }
+      
+      // Handle network errors or API errors
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error occurred';
+      setErrorMessage(`Error: ${errorMsg}`);
+      
+      // Add error message to chat
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Sorry, I encountered an error processing your request. Please try again.' 
+      }]);
+      
+      // Implement retry logic
+      if (retryCount < 2) {
+        setRetryCount(prev => prev + 1);
+        console.log(`Retrying request (attempt ${retryCount + 1}/3)...`);
+        setTimeout(() => {
+          handleSend();
+        }, 2000);
+      } else {
+        setRetryCount(0);
+      }
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
   const handleClear = () => {
     setMessages([]);
     setCurrentStreamingMessage('');
+    streamingMessageRef.current = ''; // Reset the streaming message reference
   };
 
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content);
     setCopyTooltip(content);
     setTimeout(() => setCopyTooltip(null), 2000);
+  };
+
+  const handleRetry = () => {
+    if (messages.length > 0) {
+      // Remove the last assistant message if it was an error
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant' && lastMessage.content.includes('Sorry, I encountered an error')) {
+        setMessages(prev => prev.slice(0, -1));
+      }
+      // Retry the last user message
+      const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
+      if (lastUserMessage) {
+        setInput(lastUserMessage.content);
+        setTimeout(() => {
+          handleSend();
+        }, 100);
+      }
+    }
+  };
+
+  const handleCloseError = () => {
+    setErrorMessage(null);
   };
 
   return (
@@ -255,16 +365,28 @@ const ChatInterface: React.FC = () => {
             <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
               <SmartToyIcon /> CloudSage AI Chat
             </Typography>
-            <Tooltip title="Clear conversation">
-              <IconButton
-                color="error"
-                onClick={handleClear}
-                disabled={messages.length === 0}
-                sx={{ bgcolor: 'background.paper' }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Tooltip title="Retry last message">
+                <IconButton
+                  color="primary"
+                  onClick={handleRetry}
+                  disabled={messages.length === 0 || isLoading}
+                  sx={{ bgcolor: 'background.paper' }}
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Clear conversation">
+                <IconButton
+                  color="error"
+                  onClick={handleClear}
+                  disabled={messages.length === 0}
+                  sx={{ bgcolor: 'background.paper' }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </Box>
 
           {/* Messages Area */}
@@ -325,6 +447,18 @@ const ChatInterface: React.FC = () => {
                             mb: 0.5,
                           },
                         },
+                        '& h1': {
+                          fontSize: '1.75rem',
+                          fontWeight: 700,
+                          mb: 1.5,
+                          color: 'primary.main',
+                        },
+                        '& h2': {
+                          fontSize: '1.5rem',
+                          fontWeight: 600,
+                          mb: 1.25,
+                          color: 'primary.main',
+                        },
                         '& h3': {
                           fontSize: '1.25rem',
                           fontWeight: 600,
@@ -335,6 +469,12 @@ const ChatInterface: React.FC = () => {
                           fontSize: '1.1rem',
                           fontWeight: 500,
                           mb: 1,
+                          color: 'primary.main',
+                        },
+                        '& h5, & h6': {
+                          fontSize: '1rem',
+                          fontWeight: 500,
+                          mb: 0.75,
                           color: 'primary.main',
                         },
                         '& a': {
@@ -406,6 +546,43 @@ const ChatInterface: React.FC = () => {
                             whiteSpace: 'pre',
                           },
                         },
+                        '& h1': {
+                          fontSize: '1.75rem',
+                          fontWeight: 700,
+                          mb: 1.5,
+                          color: 'primary.main',
+                        },
+                        '& h2': {
+                          fontSize: '1.5rem',
+                          fontWeight: 600,
+                          mb: 1.25,
+                          color: 'primary.main',
+                        },
+                        '& h3': {
+                          fontSize: '1.25rem',
+                          fontWeight: 600,
+                          mb: 1,
+                          color: 'primary.main',
+                        },
+                        '& h4': {
+                          fontSize: '1.1rem',
+                          fontWeight: 500,
+                          mb: 1,
+                          color: 'primary.main',
+                        },
+                        '& h5, & h6': {
+                          fontSize: '1rem',
+                          fontWeight: 500,
+                          mb: 0.75,
+                          color: 'primary.main',
+                        },
+                        '& ol, & ul': {
+                          pl: 3,
+                          mb: 1,
+                          '& li': {
+                            mb: 0.5,
+                          },
+                        },
                       }}
                       dangerouslySetInnerHTML={{ __html: currentStreamingMessage }}
                     />
@@ -445,6 +622,7 @@ const ChatInterface: React.FC = () => {
                 placeholder="Type your message..."
                 multiline
                 maxRows={4}
+                disabled={isLoading}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     bgcolor: 'background.default',
@@ -465,6 +643,18 @@ const ChatInterface: React.FC = () => {
           </Box>
         </Box>
       </Container>
+      
+      {/* Error Snackbar */}
+      <Snackbar 
+        open={!!errorMessage} 
+        autoHideDuration={6000} 
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </ThemeProvider>
   );
 };

@@ -56,4 +56,4 @@ jobs:
           slot-name: 'Production'
           package: build
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4961F13E2D70488994031501C9BAB583 }}
-          deployment-method: 'auto'
+          restart: true

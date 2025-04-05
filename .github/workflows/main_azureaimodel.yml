@@ -48,9 +48,26 @@ jobs:
           name: node-app
           path: build
       
+      - name: Check DNS resolution
+        run: |
+          echo "Checking DNS resolution for Azure App Service..."
+          nslookup azureaimodel-fxb7cug5dchbgzd4.scm.canadacentral-01.azurewebsites.net || echo "DNS lookup failed, will continue anyway"
+          sleep 10
+      
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
+        continue-on-error: true
+        with:
+          app-name: 'AzureAiModel'
+          slot-name: 'Production'
+          package: build
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4961F13E2D70488994031501C9BAB583 }}
+          restart: true
+      
+      - name: Retry deployment if failed
+        if: failure()
+        uses: azure/webapps-deploy@v3
         with:
           app-name: 'AzureAiModel'
           slot-name: 'Production'

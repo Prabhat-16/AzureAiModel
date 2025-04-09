@@ -477,7 +477,7 @@ const ChatInterface: React.FC = () => {
                   letterSpacing: '0.5px',
                 }}
               >
-                <SmartToyIcon sx={{ fontSize: '1.5rem' }} /> CloudSage AI
+                <SmartToyIcon sx={{ fontSize: '1.5rem' }} /> CloudSagee AI
               </Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Tooltip title="Retry last message">

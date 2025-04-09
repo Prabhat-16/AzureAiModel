@@ -65,7 +65,7 @@ const theme = createTheme({
     },
     background: {
       default: '#0F172A', // Dark blue-gray
-      paper: '#1E293B', // Lighter blue-gray
+      paper: 'rgba(30, 41, 59, 0.8)', // Lighter blue-gray with transparency
     },
   },
   typography: {
@@ -79,6 +79,12 @@ const theme = createTheme({
           textTransform: 'none',
           padding: '10px 20px',
           fontWeight: 500,
+          boxShadow: '0 4px 14px 0 rgba(124, 58, 237, 0.39)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 6px 20px 0 rgba(124, 58, 237, 0.5)',
+          },
         },
       },
     },
@@ -90,6 +96,10 @@ const theme = createTheme({
             '&:hover .MuiOutlinedInput-notchedOutline': {
               borderColor: 'rgba(124, 58, 237, 0.5)',
             },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#7C3AED',
+              borderWidth: '2px',
+            },
           },
         },
       },
@@ -98,6 +108,9 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
         },
       },
     },
@@ -353,301 +366,455 @@ const ChatInterface: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="md" sx={{ height: '100vh', py: 2 }}>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          width: '100%',
+          background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237C3AED' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            opacity: 0.5,
+            zIndex: 0,
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.1) 0%, rgba(16, 185, 129, 0.05) 50%, rgba(15, 23, 42, 0) 100%)',
+            zIndex: 1,
+          },
+        }}
+      >
+        {/* Floating elements for futuristic effect */}
         <Box
           sx={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            bgcolor: 'background.default',
-            borderRadius: '24px',
-            overflow: 'hidden',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+            position: 'absolute',
+            top: '10%',
+            left: '5%',
+            width: '150px',
+            height: '150px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0) 70%)',
+            filter: 'blur(20px)',
+            zIndex: 1,
+            animation: 'float 15s ease-in-out infinite',
+            '@keyframes float': {
+              '0%': { transform: 'translate(0, 0) rotate(0deg)' },
+              '50%': { transform: 'translate(20px, 20px) rotate(180deg)' },
+              '100%': { transform: 'translate(0, 0) rotate(360deg)' },
+            },
           }}
-        >
-          {/* Header */}
-          <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <SmartToyIcon /> CloudSage AI Chat
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Tooltip title="Retry last message">
-                <IconButton
-                  color="primary"
-                  onClick={handleRetry}
-                  disabled={messages.length === 0 || isLoading}
-                  sx={{ bgcolor: 'background.paper' }}
-                >
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Clear conversation">
-                <IconButton
-                  color="error"
-                  onClick={handleClear}
-                  disabled={messages.length === 0}
-                  sx={{ bgcolor: 'background.paper' }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: '10%',
+            right: '5%',
+            width: '200px',
+            height: '200px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0) 70%)',
+            filter: 'blur(20px)',
+            zIndex: 1,
+            animation: 'float 20s ease-in-out infinite reverse',
+            '@keyframes float': {
+              '0%': { transform: 'translate(0, 0) rotate(0deg)' },
+              '50%': { transform: 'translate(20px, 20px) rotate(180deg)' },
+              '100%': { transform: 'translate(0, 0) rotate(360deg)' },
+            },
+          }}
+        />
+        
+        <Container maxWidth="md" sx={{ height: '100vh', py: 2, position: 'relative', zIndex: 2 }}>
+          <Box
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              bgcolor: 'background.paper',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+              position: 'relative',
+              backdropFilter: 'blur(10px)',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '4px',
+                background: 'linear-gradient(90deg, #7C3AED, #10B981)',
+              },
+            }}
+          >
+            {/* Header */}
+            <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box sx={{ width: '40px' }} /> {/* Spacer for balance */}
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  color: 'primary.main', 
+                  fontWeight: 700, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  textAlign: 'center',
+                  background: 'linear-gradient(90deg, #7C3AED, #10B981)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                <SmartToyIcon sx={{ fontSize: '1.5rem' }} /> CloudSage AI
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Tooltip title="Retry last message">
+                  <IconButton
+                    color="primary"
+                    onClick={handleRetry}
+                    disabled={messages.length === 0 || isLoading}
+                    sx={{ 
+                      bgcolor: 'background.paper',
+                      '&:hover': {
+                        bgcolor: 'rgba(124, 58, 237, 0.1)',
+                      }
+                    }}
+                  >
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Clear conversation">
+                  <IconButton
+                    color="error"
+                    onClick={handleClear}
+                    disabled={messages.length === 0}
+                    sx={{ 
+                      bgcolor: 'background.paper',
+                      '&:hover': {
+                        bgcolor: 'rgba(239, 68, 68, 0.1)',
+                      }
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box>
-          </Box>
 
-          {/* Messages Area */}
-          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2, gap: 2, display: 'flex', flexDirection: 'column' }}>
-            {messages.map((message, index) => (
-              <Fade in={true} key={index} timeout={500}>
-                <Box
+            {/* Messages Area */}
+            <Box 
+              sx={{ 
+                flexGrow: 1, 
+                overflow: 'auto', 
+                p: 2, 
+                gap: 2, 
+                display: 'flex', 
+                flexDirection: 'column',
+                background: 'radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%)',
+              }}
+            >
+              {messages.map((message, index) => (
+                <Fade in={true} key={index} timeout={500}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 2,
+                      flexDirection: message.role === 'user' ? 'row-reverse' : 'row',
+                    }}
+                  >
+                    <Avatar
+                      sx={{
+                        bgcolor: message.role === 'user' ? 'primary.main' : 'secondary.main',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        width: 40,
+                        height: 40,
+                      }}
+                    >
+                      {message.role === 'user' ? <PersonIcon /> : <SmartToyIcon />}
+                    </Avatar>
+                    <Paper
+                      sx={{
+                        p: 2,
+                        maxWidth: '80%',
+                        bgcolor: message.role === 'user' ? 'primary.main' : 'background.paper',
+                        borderRadius: '16px',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        position: 'relative',
+                        border: message.role === 'assistant' ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                        '&::before': message.role === 'assistant' ? {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: '2px',
+                          background: 'linear-gradient(90deg, #7C3AED, #10B981)',
+                          borderRadius: '16px 16px 0 0',
+                        } : {},
+                      }}
+                    >
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          '& strong': { color: message.role === 'user' ? 'white' : 'primary.main' },
+                          '& em': { fontStyle: 'italic' },
+                          '& code': { 
+                            fontFamily: 'monospace',
+                            bgcolor: 'rgba(0,0,0,0.2)',
+                            p: 0.5,
+                            borderRadius: '4px',
+                          },
+                          '& pre': {
+                            bgcolor: 'rgba(0,0,0,0.2)',
+                            p: 2,
+                            borderRadius: '8px',
+                            overflow: 'auto',
+                            '& code': {
+                              display: 'block',
+                              whiteSpace: 'pre',
+                            },
+                          },
+                          '& ol, & ul': {
+                            pl: 3,
+                            mb: 1,
+                            '& li': {
+                              mb: 0.5,
+                            },
+                          },
+                          '& h1': {
+                            fontSize: '1.75rem',
+                            fontWeight: 700,
+                            mb: 1.5,
+                            color: 'primary.main',
+                          },
+                          '& h2': {
+                            fontSize: '1.5rem',
+                            fontWeight: 600,
+                            mb: 1.25,
+                            color: 'primary.main',
+                          },
+                          '& h3': {
+                            fontSize: '1.25rem',
+                            fontWeight: 600,
+                            mb: 1,
+                            color: 'primary.main',
+                          },
+                          '& h4': {
+                            fontSize: '1.1rem',
+                            fontWeight: 500,
+                            mb: 1,
+                            color: 'primary.main',
+                          },
+                          '& h5, & h6': {
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                            mb: 0.75,
+                            color: 'primary.main',
+                          },
+                          '& a': {
+                            color: 'primary.main',
+                            textDecoration: 'none',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                            },
+                          },
+                        }}
+                        dangerouslySetInnerHTML={{ __html: message.content }}
+                      />
+                      {message.role === 'assistant' && (
+                        <Tooltip title={copyTooltip === message.content ? 'Copied!' : 'Copy message'}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleCopy(message.content)}
+                            sx={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              opacity: 0.5,
+                              '&:hover': { opacity: 1 },
+                            }}
+                          >
+                            <ContentCopyIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Paper>
+                  </Box>
+                </Fade>
+              ))}
+              
+              {/* Streaming message */}
+              {currentStreamingMessage && (
+                <Fade in={true} timeout={500}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                    <Avatar sx={{ bgcolor: 'secondary.main', width: 40, height: 40 }}>
+                      <SmartToyIcon />
+                    </Avatar>
+                    <Paper
+                      sx={{
+                        p: 2,
+                        maxWidth: '80%',
+                        bgcolor: 'background.paper',
+                        borderRadius: '16px',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: '2px',
+                          background: 'linear-gradient(90deg, #7C3AED, #10B981)',
+                          borderRadius: '16px 16px 0 0',
+                        },
+                      }}
+                    >
+                      <Typography 
+                        variant="body1"
+                        sx={{ 
+                          '& strong': { color: 'primary.main' },
+                          '& em': { fontStyle: 'italic' },
+                          '& code': { 
+                            fontFamily: 'monospace',
+                            bgcolor: 'rgba(0,0,0,0.2)',
+                            p: 0.5,
+                            borderRadius: '4px',
+                          },
+                          '& pre': {
+                            bgcolor: 'rgba(0,0,0,0.2)',
+                            p: 2,
+                            borderRadius: '8px',
+                            overflow: 'auto',
+                            '& code': {
+                              display: 'block',
+                              whiteSpace: 'pre',
+                            },
+                          },
+                          '& h1': {
+                            fontSize: '1.75rem',
+                            fontWeight: 700,
+                            mb: 1.5,
+                            color: 'primary.main',
+                          },
+                          '& h2': {
+                            fontSize: '1.5rem',
+                            fontWeight: 600,
+                            mb: 1.25,
+                            color: 'primary.main',
+                          },
+                          '& h3': {
+                            fontSize: '1.25rem',
+                            fontWeight: 600,
+                            mb: 1,
+                            color: 'primary.main',
+                          },
+                          '& h4': {
+                            fontSize: '1.1rem',
+                            fontWeight: 500,
+                            mb: 1,
+                            color: 'primary.main',
+                          },
+                          '& h5, & h6': {
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                            mb: 0.75,
+                            color: 'primary.main',
+                          },
+                          '& ol, & ul': {
+                            pl: 3,
+                            mb: 1,
+                            '& li': {
+                              mb: 0.5,
+                            },
+                          },
+                        }}
+                        dangerouslySetInnerHTML={{ __html: currentStreamingMessage }}
+                      />
+                      <Box
+                        component="span"
+                        sx={{
+                          display: 'inline-block',
+                          width: '4px',
+                          height: '20px',
+                          bgcolor: 'primary.main',
+                          ml: 0.5,
+                          animation: `${blinkingCursor} 1s step-end infinite`,
+                        }}
+                      />
+                    </Paper>
+                  </Box>
+                </Fade>
+              )}
+
+              {isLoading && !currentStreamingMessage && (
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <CircularProgress size={24} sx={{ color: 'primary.main' }} />
+                </Box>
+              )}
+              <div ref={messagesEndRef} />
+            </Box>
+
+            {/* Input Area */}
+            <Box 
+              sx={{ 
+                p: 2, 
+                bgcolor: 'background.paper', 
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  placeholder="Type your message..."
+                  multiline
+                  maxRows={4}
+                  disabled={isLoading}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 2,
-                    flexDirection: message.role === 'user' ? 'row-reverse' : 'row',
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: 'background.default',
+                    },
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSend}
+                  disabled={isLoading || !input.trim()}
+                  endIcon={<SendIcon />}
+                  sx={{ 
+                    minWidth: '120px',
+                    background: 'linear-gradient(90deg, #7C3AED, #10B981)',
+                    '&:hover': {
+                      background: 'linear-gradient(90deg, #6D28D9, #059669)',
+                    },
                   }}
                 >
-                  <Avatar
-                    sx={{
-                      bgcolor: message.role === 'user' ? 'primary.main' : 'secondary.main',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    {message.role === 'user' ? <PersonIcon /> : <SmartToyIcon />}
-                  </Avatar>
-                  <Paper
-                    sx={{
-                      p: 2,
-                      maxWidth: '80%',
-                      bgcolor: message.role === 'user' ? 'primary.main' : 'background.paper',
-                      borderRadius: '12px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                      position: 'relative',
-                    }}
-                  >
-                    <Typography 
-                      variant="body1" 
-                      sx={{ 
-                        '& strong': { color: message.role === 'user' ? 'white' : 'primary.main' },
-                        '& em': { fontStyle: 'italic' },
-                        '& code': { 
-                          fontFamily: 'monospace',
-                          bgcolor: 'rgba(0,0,0,0.2)',
-                          p: 0.5,
-                          borderRadius: '4px',
-                        },
-                        '& pre': {
-                          bgcolor: 'rgba(0,0,0,0.2)',
-                          p: 2,
-                          borderRadius: '8px',
-                          overflow: 'auto',
-                          '& code': {
-                            display: 'block',
-                            whiteSpace: 'pre',
-                          },
-                        },
-                        '& ol, & ul': {
-                          pl: 3,
-                          mb: 1,
-                          '& li': {
-                            mb: 0.5,
-                          },
-                        },
-                        '& h1': {
-                          fontSize: '1.75rem',
-                          fontWeight: 700,
-                          mb: 1.5,
-                          color: 'primary.main',
-                        },
-                        '& h2': {
-                          fontSize: '1.5rem',
-                          fontWeight: 600,
-                          mb: 1.25,
-                          color: 'primary.main',
-                        },
-                        '& h3': {
-                          fontSize: '1.25rem',
-                          fontWeight: 600,
-                          mb: 1,
-                          color: 'primary.main',
-                        },
-                        '& h4': {
-                          fontSize: '1.1rem',
-                          fontWeight: 500,
-                          mb: 1,
-                          color: 'primary.main',
-                        },
-                        '& h5, & h6': {
-                          fontSize: '1rem',
-                          fontWeight: 500,
-                          mb: 0.75,
-                          color: 'primary.main',
-                        },
-                        '& a': {
-                          color: 'primary.main',
-                          textDecoration: 'none',
-                          '&:hover': {
-                            textDecoration: 'underline',
-                          },
-                        },
-                      }}
-                      dangerouslySetInnerHTML={{ __html: message.content }}
-                    />
-                    {message.role === 'assistant' && (
-                      <Tooltip title={copyTooltip === message.content ? 'Copied!' : 'Copy message'}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleCopy(message.content)}
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            opacity: 0.5,
-                            '&:hover': { opacity: 1 },
-                          }}
-                        >
-                          <ContentCopyIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </Paper>
-                </Box>
-              </Fade>
-            ))}
-            
-            {/* Streaming message */}
-            {currentStreamingMessage && (
-              <Fade in={true} timeout={500}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                  <Avatar sx={{ bgcolor: 'secondary.main' }}>
-                    <SmartToyIcon />
-                  </Avatar>
-                  <Paper
-                    sx={{
-                      p: 2,
-                      maxWidth: '80%',
-                      bgcolor: 'background.paper',
-                      borderRadius: '12px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    <Typography 
-                      variant="body1"
-                      sx={{ 
-                        '& strong': { color: 'primary.main' },
-                        '& em': { fontStyle: 'italic' },
-                        '& code': { 
-                          fontFamily: 'monospace',
-                          bgcolor: 'rgba(0,0,0,0.2)',
-                          p: 0.5,
-                          borderRadius: '4px',
-                        },
-                        '& pre': {
-                          bgcolor: 'rgba(0,0,0,0.2)',
-                          p: 2,
-                          borderRadius: '8px',
-                          overflow: 'auto',
-                          '& code': {
-                            display: 'block',
-                            whiteSpace: 'pre',
-                          },
-                        },
-                        '& h1': {
-                          fontSize: '1.75rem',
-                          fontWeight: 700,
-                          mb: 1.5,
-                          color: 'primary.main',
-                        },
-                        '& h2': {
-                          fontSize: '1.5rem',
-                          fontWeight: 600,
-                          mb: 1.25,
-                          color: 'primary.main',
-                        },
-                        '& h3': {
-                          fontSize: '1.25rem',
-                          fontWeight: 600,
-                          mb: 1,
-                          color: 'primary.main',
-                        },
-                        '& h4': {
-                          fontSize: '1.1rem',
-                          fontWeight: 500,
-                          mb: 1,
-                          color: 'primary.main',
-                        },
-                        '& h5, & h6': {
-                          fontSize: '1rem',
-                          fontWeight: 500,
-                          mb: 0.75,
-                          color: 'primary.main',
-                        },
-                        '& ol, & ul': {
-                          pl: 3,
-                          mb: 1,
-                          '& li': {
-                            mb: 0.5,
-                          },
-                        },
-                      }}
-                      dangerouslySetInnerHTML={{ __html: currentStreamingMessage }}
-                    />
-                    <Box
-                      component="span"
-                      sx={{
-                        display: 'inline-block',
-                        width: '4px',
-                        height: '20px',
-                        bgcolor: 'primary.main',
-                        ml: 0.5,
-                        animation: `${blinkingCursor} 1s step-end infinite`,
-                      }}
-                    />
-                  </Paper>
-                </Box>
-              </Fade>
-            )}
-
-            {isLoading && !currentStreamingMessage && (
-              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                <CircularProgress size={24} />
+                  Send
+                </Button>
               </Box>
-            )}
-            <div ref={messagesEndRef} />
-          </Box>
-
-          {/* Input Area */}
-          <Box sx={{ p: 2, bgcolor: 'background.paper', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                placeholder="Type your message..."
-                multiline
-                maxRows={4}
-                disabled={isLoading}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'background.default',
-                  },
-                }}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSend}
-                disabled={isLoading || !input.trim()}
-                endIcon={<SendIcon />}
-                sx={{ minWidth: '120px' }}
-              >
-                Send
-              </Button>
             </Box>
           </Box>
-        </Box>
-      </Container>
+        </Container>
+      </Box>
       
       {/* Error Snackbar */}
       <Snackbar 
